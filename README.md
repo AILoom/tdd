@@ -1,148 +1,109 @@
-# TDD
+# Test-Driven Development : TDD
 
-Test-driven development framework for AI coding assistants.
+**Get your AI to write tests first.** A small CLI and set of slash commands that wire Red/Green/Refactor into your existing AI assistant (Cursor, Claude Code, Copilot, and others).
 
-Our philosophy:
+---
 
-```
-→ test-first not code-first
-→ red/green/refactor explicitly
-→ fluid not rigid
-→ built for brownfield not just greenfield
-→ progressive rigor from quick to thorough
-```
+## The problem
 
-## See it in action
+Assistants are great at writing code and weak at writing tests. They tend to implement first and test later or skip tests. This framework keeps the cycle explicit: **plan tests → write failing tests → implement → refactor**, with one change per folder and coverage tracked in the repo.
 
-```
-You: /tdd:new add-user-auth
-AI:  Created tdd/changes/add-user-auth/
-     Ready to create: intent
+---
 
-You: /tdd:ff
-AI:  ✓ intent.md     — why we're doing this
-     ✓ test-plan.md  — what tests to write (Given/When/Then)
-     ✓ design.md     — technical approach
-     ✓ tasks.md      — Red/Green/Refactor checklist
-     Ready for RED phase!
+## Install and run
 
-You: /tdd:red
-AI:  Writing failing tests...
-     ✓ 1.1 Write test for login with valid credentials
-     ✓ 1.2 Write test for login with invalid password
-     ✓ 1.3 Write test for session timeout
-     All tests written and failing!
-
-You: /tdd:green
-AI:  Implementing to pass tests...
-     ✓ 2.1 Implement login endpoint
-     ✓ 2.2 Implement session management
-     All tests passing!
-
-You: /tdd:refactor
-AI:  Cleaning up code...
-     ✓ 3.1 Extract auth middleware
-     ✓ 3.2 Add JSDoc documentation
-     All tests still green!
-
-You: /tdd:archive
-AI:  Archived to tdd/changes/archive/2025-01-24-add-user-auth/
-     Coverage updated. Ready for the next feature.
-```
-
-## Quick Start
-
-**Requires Node.js 20 or higher.**
-
-Install globally:
+Node.js 20+ required.
 
 ```bash
 npm install -g @ailoom/tdd
-```
-
-Initialize in your project:
-
-```bash
 cd your-project
 tdd init
 ```
 
-Now tell your AI: `/tdd:new <change-name>`
+Pick your tools when prompted (or use `tdd init --tools cursor,claude`). Then in chat: `**/tdd:new add-thing**` to start a change.
 
-## How It Works
+---
 
-TDD adds a lightweight test-planning layer so you and your AI assistant agree on
-**what tests to write** before any code is written. The workflow follows the classic
-Red/Green/Refactor cycle:
+## What you get
 
-1. **Plan** — Define intent, test scenarios, design, and tasks
-2. **RED** — Write failing tests based on the test plan
-3. **GREEN** — Write minimal code to make tests pass
-4. **REFACTOR** — Clean up without breaking tests
-5. **Archive** — Complete the change, update coverage docs
+Each change lives in `tdd/changes/<name>/` with:
 
-## Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/tdd:explore` | Investigate before committing to a change |
-| `/tdd:new` | Start a new TDD change |
-| `/tdd:continue` | Create the next artifact based on dependencies |
-| `/tdd:ff` | Fast-forward: create all planning artifacts at once |
-| `/tdd:red` | Write failing tests from the test plan |
-| `/tdd:green` | Write minimal code to make tests pass |
-| `/tdd:refactor` | Clean up code while keeping tests green |
-| `/tdd:verify` | Verify implementation matches test plan |
-| `/tdd:sync` | Merge delta coverage into main coverage |
-| `/tdd:archive` | Archive a completed change |
+| File           | Role                                              |
+| -------------- | ------------------------------------------------- |
+| `intent.md`    | Why we’re doing this, scope, impact               |
+| `test-plan.md` | Scenarios to implement as tests (Given/When/Then) |
+| `design.md`    | How we’ll build it (optional)                     |
+| `tasks.md`     | Checklist: RED → GREEN → REFACTOR                 |
 
-## CLI Reference
+
+The flow:
+
+1. **Plan** — `/tdd:ff` (or `/tdd:continue`) fills intent → test-plan → design → tasks.
+2. **RED** — `/tdd:red`: AI writes **only** tests from the plan; they must fail.
+3. **GREEN** — `/tdd:green`: AI writes the smallest code that makes those tests pass.
+4. **REFACTOR** — `/tdd:refactor`: AI cleans up; you re-run tests after each step.
+5. **Done** — `/tdd:archive` moves the change to the archive and updates `tdd/coverage/`.
+
+So the contract is the **test plan**; the loop is always Red → Green → Refactor.
+
+---
+
+## Slash commands (in your AI chat)
+
+
+| Command         | Use it to                                  |
+| --------------- | ------------------------------------------ |
+| `/tdd:new`      | Start a new change                         |
+| `/tdd:ff`       | Generate all planning docs in one go       |
+| `/tdd:continue` | Generate the next doc step-by-step         |
+| `/tdd:red`      | Write failing tests (no implementation)    |
+| `/tdd:green`    | Implement until tests pass                 |
+| `/tdd:refactor` | Refactor while keeping tests green         |
+| `/tdd:verify`   | Check implementation vs plan and run tests |
+| `/tdd:archive`  | Archive the change and update coverage     |
+
+
+There are also `/tdd:explore` (before committing to a change) and `/tdd:sync` (merge coverage without archiving). Full list and behavior are in [Commands](docs/commands.md).
+
+---
+
+## Terminal commands
 
 ```bash
-tdd init [--tools cursor,claude] [--schema test-driven]
-tdd change new <name> [--schema <name>]
-tdd list
-tdd show <name>
-tdd status
+tdd init [--tools ...] [--schema test-driven]
+tdd change new <name>
+tdd list | tdd show <name> | tdd status | tdd view
 tdd validate <name>
 tdd archive <name> [--no-sync]
-tdd view
-tdd schema list
-tdd schema init <name>
-tdd schema fork <source> <name>
-tdd schema validate <name>
-tdd update [--tools cursor,claude]
+tdd schema list | init | fork | validate
+tdd update [--tools ...]
 ```
 
-## Supported Tools
+Details: [CLI reference](docs/cli.md). Tool list and install paths: [Supported tools](docs/supported-tools.md).
 
-| Tool | Skills Location | Commands Location |
-|------|-----------------|-------------------|
-| Cursor | `.cursor/skills/` | `.cursor/commands/` |
-| Claude Code | `.claude/skills/` | `.claude/commands/tdd/` |
-| GitHub Copilot | `.github/skills/` | `.github/prompts/` |
-| Windsurf | `.windsurf/skills/` | `.windsurf/workflows/` |
-| Cline | `.cline/skills/` | `.clinerules/workflows/` |
-| Codex | `.codex/skills/` | `.codex/skills/` |
+---
+
+## Why this exists
+
+- **Tests first** — The plan is “what tests to write”; the AI is constrained to that before writing production code.
+- **Red then green** — RED phase is tests-only; GREEN is minimal implementation. No “implement and test later.”
+- **Refactor with guardrails** — REFACTOR runs with “tests must stay green” built into the instructions.
+- **One change, one folder** — Same idea as “one change, one folder” in spec-driven tools, but the content is test-plan + tasks, and the apply step is split into red/green/refactor.
+- **Coverage as docs** — `tdd/coverage/` (and per-change deltas) record what’s tested; archiving merges that into the main coverage docs.
+
+---
 
 ## Docs
 
-- **[Getting Started](docs/getting-started.md)**: First steps
-- **[Concepts](docs/concepts.md)**: How it all fits together
-- **[Commands](docs/commands.md)**: Slash commands and skills
-- **[Workflows](docs/workflows.md)**: Common patterns
-- **[CLI](docs/cli.md)**: Terminal reference
-- **[Customization](docs/customization.md)**: Custom schemas and configuration
+- [Getting started](docs/getting-started.md)
+- [Concepts](docs/concepts.md)
+- [Commands](docs/commands.md)
+- [Workflows](docs/workflows.md)
+- [CLI](docs/cli.md)
+- [Customization](docs/customization.md)
 
-## Why TDD with AI?
-
-AI coding assistants are powerful but often skip the test-writing step. TDD ensures:
-
-- **Tests come first** — AI writes tests before implementation, catching design issues early
-- **Minimal implementation** — GREEN phase prevents over-engineering
-- **Safe refactoring** — Tests provide a safety net for cleanup
-- **Traceable behavior** — Test plans document what the system should do
-- **Predictable results** — Structured workflow replaces ad-hoc prompting
+---
 
 ## Development
 
@@ -151,7 +112,5 @@ npm install
 npm run build
 npm test
 ```
-
-## License
 
 MIT
